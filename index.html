@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Candy Pipes Puzzle — Connect Pipes, Sort Balls</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 24px;
+            background:
+                radial-gradient(circle at 20% 20%, rgba(255, 182, 193, 0.55) 0%, transparent 42%),
+                radial-gradient(circle at 85% 15%, rgba(186, 230, 253, 0.5) 0%, transparent 40%),
+                radial-gradient(circle at 70% 85%, rgba(253, 224, 71, 0.45) 0%, transparent 45%),
+                linear-gradient(160deg, #7c3aed 0%, #5b21b6 40%, #4c1d95 100%);
+            color: #f5f3ff;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        .pipes-bg {
+            position: fixed;
+            inset: 0;
+            opacity: 0.12;
+            pointer-events: none;
+            z-index: 0;
+            background:
+                repeating-linear-gradient(90deg, transparent, transparent 60px, rgba(255, 255, 255, 0.08) 60px, rgba(255, 255, 255, 0.08) 62px),
+                repeating-linear-gradient(0deg, transparent, transparent 60px, rgba(255, 255, 255, 0.06) 60px, rgba(255, 255, 255, 0.06) 62px);
+        }
+
+        .bubble {
+            position: fixed;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 0;
+            animation: float 12s ease-in-out infinite;
+        }
+
+        .bubble:nth-child(1) {
+            width: 120px;
+            height: 120px;
+            left: 8%;
+            top: 18%;
+            background: radial-gradient(circle at 30% 30%, #fda4af, #fb7185);
+            opacity: 0.35;
+        }
+
+        .bubble:nth-child(2) {
+            width: 80px;
+            height: 80px;
+            right: 12%;
+            top: 28%;
+            background: radial-gradient(circle at 30% 30%, #a5f3fc, #22d3ee);
+            opacity: 0.3;
+            animation-delay: -4s;
+            animation-duration: 15s;
+        }
+
+        .bubble:nth-child(3) {
+            width: 100px;
+            height: 100px;
+            right: 20%;
+            bottom: 15%;
+            background: radial-gradient(circle at 30% 30%, #fde68a, #fbbf24);
+            opacity: 0.28;
+            animation-delay: -7s;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(12px, -24px) scale(1.05); }
+        }
+
+        .container {
+            max-width: 640px;
+            width: 100%;
+            background: linear-gradient(155deg, rgba(255, 255, 255, 0.14) 0%, rgba(255, 255, 255, 0.06) 100%);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.22);
+            border-radius: 28px;
+            padding: 44px 40px;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+            box-shadow:
+                0 0 0 1px rgba(255, 255, 255, 0.1) inset,
+                0 24px 48px rgba(76, 29, 149, 0.45);
+        }
+
+        .icon-wrap {
+            width: 108px;
+            height: 108px;
+            margin: 0 auto 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 26px;
+            background: linear-gradient(145deg, #f472b6 0%, #ec4899 45%, #db2777 100%);
+            box-shadow: 0 14px 36px rgba(236, 72, 153, 0.45), 0 0 0 3px rgba(255, 255, 255, 0.2);
+        }
+
+        .icon-wrap svg {
+            width: 70px;
+            height: 70px;
+            filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.2));
+        }
+
+        h1 {
+            font-size: 2.05rem;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            margin-bottom: 6px;
+            color: #fff;
+            text-shadow: 0 2px 16px rgba(0, 0, 0, 0.15);
+        }
+
+        h1 span.accent {
+            background: linear-gradient(90deg, #fde68a, #fcd34d, #fbbf24);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .tagline {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #e9d5ff;
+            margin-bottom: 26px;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+        }
+
+        .chips {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 26px;
+        }
+
+        .chip {
+            font-size: 0.76rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+            padding: 8px 14px;
+            border-radius: 999px;
+            background: rgba(34, 211, 238, 0.2);
+            color: #a5f3fc;
+            border: 1px solid rgba(103, 232, 249, 0.45);
+        }
+
+        .chip.pink {
+            background: rgba(244, 114, 182, 0.22);
+            color: #fbcfe8;
+            border-color: rgba(244, 114, 182, 0.45);
+        }
+
+        .lead {
+            text-align: left;
+            color: #ede9fe;
+            line-height: 1.75;
+            font-size: 1.03rem;
+            margin-bottom: 26px;
+        }
+
+        .lead strong {
+            color: #fff;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            text-align: left;
+            margin-bottom: 26px;
+        }
+
+        .feature-card {
+            background: rgba(91, 33, 182, 0.45);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 16px;
+            padding: 16px;
+            transition: border-color 0.2s, transform 0.2s;
+        }
+
+        .feature-card:hover {
+            border-color: rgba(253, 224, 71, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .feature-card h3 {
+            font-size: 0.84rem;
+            color: #fde68a;
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+
+        .feature-card p {
+            font-size: 0.87rem;
+            color: #ddd6fe;
+            line-height: 1.55;
+        }
+
+        .cta {
+            display: inline-block;
+            margin-top: 8px;
+            padding: 16px 36px;
+            font-size: 1.02rem;
+            font-weight: 700;
+            color: #5b21b6;
+            text-decoration: none;
+            border-radius: 16px;
+            background: linear-gradient(180deg, #fef08a 0%, #fbbf24 45%, #f59e0b 100%);
+            box-shadow: 0 8px 28px rgba(251, 191, 36, 0.45);
+            border: 2px solid rgba(255, 255, 255, 0.45);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .cta:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 36px rgba(251, 191, 36, 0.55);
+        }
+
+        .foot {
+            margin-top: 26px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.15);
+            font-size: 0.88rem;
+            color: #c4b5fd;
+        }
+
+        .foot a {
+            color: #fde68a;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .foot a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 560px) {
+            .feature-grid {
+                grid-template-columns: 1fr;
+            }
+            .container {
+                padding: 32px 22px;
+            }
+            h1 {
+                font-size: 1.65rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="pipes-bg" aria-hidden="true"></div>
+    <div class="bubble" aria-hidden="true"></div>
+    <div class="bubble" aria-hidden="true"></div>
+    <div class="bubble" aria-hidden="true"></div>
+
+    <div class="container">
+        <div class="icon-wrap" aria-hidden="true">
+            <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <rect x="8" y="24" width="20" height="16" rx="4" fill="#67e8f9" stroke="#fff" stroke-width="2"/>
+                <rect x="36" y="24" width="20" height="16" rx="4" fill="#f9a8d4" stroke="#fff" stroke-width="2"/>
+                <path d="M28 32 L36 32" stroke="#fff" stroke-width="4" stroke-linecap="round"/>
+                <circle cx="18" cy="12" r="8" fill="#fde047" stroke="#fff" stroke-width="2"/>
+                <circle cx="46" cy="12" r="8" fill="#86efac" stroke="#fff" stroke-width="2"/>
+                <path d="M18 20 L18 24 M46 20 L46 24" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+                <circle cx="18" cy="52" r="6" fill="#fde047"/>
+                <circle cx="46" cy="52" r="6" fill="#86efac"/>
+            </svg>
+        </div>
+
+        <h1>Candy Pipes <span class="accent">Puzzle</span></h1>
+        <p class="tagline">Connect pipes · Sort balls</p>
+
+        <div class="chips">
+            <span class="chip pink">Free</span>
+            <span class="chip">iOS 15+</span>
+            <span class="chip pink">Puzzle</span>
+            <span class="chip">Ages 4+</span>
+        </div>
+
+        <p class="lead">
+            <strong>A relaxing, addictive pipe puzzle.</strong> Slide and connect pipes to guide colorful balls, avoid jams, and beat clever levels. Easy to play, tricky to master — build the perfect route, sort balls by color, and enjoy satisfying visuals whether you play for a minute or an hour.
+        </p>
+
+        <div class="feature-grid">
+            <div class="feature-card">
+                <h3>Slide &amp; connect</h3>
+                <p>Rotate and link pipe pieces to create a working path. Keep the flow moving and prevent blockages as balls travel through your tube network.</p>
+            </div>
+            <div class="feature-card">
+                <h3>Sort by color</h3>
+                <p>Guide marbles through fun paths and complete each level’s goal. Quick brain-teasers sit alongside deeper, more strategic challenges.</p>
+            </div>
+            <div class="feature-card">
+                <h3>Smart progression</h3>
+                <p>Levels ramp from beginner-friendly to genuinely brainy. Controls stay simple so you can focus on logic and satisfying “click” moments.</p>
+            </div>
+            <div class="feature-card">
+                <h3>Any session length</h3>
+                <p>Perfect for short breaks or longer puzzle runs. Bright candy tones and smooth effects make every solved level feel rewarding.</p>
+            </div>
+        </div>
+
+        <a href="https://apps.apple.com/us/app/candy-pipes-puzzle/id6757530864?uo=4" class="cta" target="_blank" rel="noopener noreferrer">Download on the App Store</a>
+
+        <div class="foot">
+            <a href="privacy.html">Privacy</a>
+        </div>
+    </div>
+</body>
+
+</html>
